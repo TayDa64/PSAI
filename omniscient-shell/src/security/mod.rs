@@ -5,4 +5,6 @@ pub mod consent;
 pub mod isolation;
 pub mod resource_limits;
 
-// Placeholder for Phase 2 implementation
+// Re-export agent capabilities for security module
+pub use crate::agents::capabilities::{Capability, CapabilityManager};
+pub use crate::oauth::consent::ConsentLedger;
