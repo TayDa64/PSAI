@@ -19,5 +19,12 @@
         "vitaliymaz.vscode-svg-previewer"
       ]
     }
+  },
+
+  // Request the largest available machine type for this large project
+  "hostRequirements": {
+    "cpus": 32,
+    "memory": "64gb",
+    "storage": "256gb"
   }
 }
