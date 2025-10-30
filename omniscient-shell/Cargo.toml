@@ -48,6 +48,7 @@ oauth2 = "4.4"
 keyring = "3.6"
 argon2 = "0.5"
 rand = "0.8"
+uuid = { version = "1.11", features = ["v4"] }
 
 # Storage
 rusqlite = { version = "0.32", features = ["bundled"] }

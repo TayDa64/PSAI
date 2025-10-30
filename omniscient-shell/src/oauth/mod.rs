@@ -5,4 +5,7 @@ pub mod providers;
 pub mod vault;
 pub mod consent;
 
-// Placeholder for Phase 3 implementation
+pub use broker::{OAuthBroker, ProviderConfig, TokenHandle};
+pub use vault::TokenVault;
+pub use consent::ConsentLedger;
+pub use providers::{github_provider, google_provider};
