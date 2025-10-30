@@ -25,6 +25,6 @@
   "hostRequirements": {
     "cpus": 32,
     "memory": "64gb",
-    "storage": "256gb"
+    "storage": "128gb"
   }
 }
