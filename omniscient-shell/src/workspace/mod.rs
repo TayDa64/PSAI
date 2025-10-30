@@ -4,4 +4,6 @@ pub mod selection;
 pub mod artifacts;
 pub mod retention;
 
-// Placeholder for Phase 4 implementation
+pub use selection::Workspace;
+pub use artifacts::Artifact;
+pub use retention::{RetentionPolicy, PruneStrategy};

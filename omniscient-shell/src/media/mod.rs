@@ -4,4 +4,6 @@ pub mod ffmpeg;
 pub mod cache;
 pub mod preview;
 
-// Placeholder for Phase 4 implementation
+pub use ffmpeg::FFmpegProcessor;
+pub use cache::MediaCache;
+pub use preview::PreviewAdapter;
