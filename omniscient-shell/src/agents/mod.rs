@@ -8,4 +8,8 @@ pub mod native_runner;
 pub mod event_protocol;
 pub mod capabilities;
 
-// Placeholder for Phase 2 implementation
+pub use runtime::AgentRuntime;
+pub use registry::AgentRegistry;
+pub use manifest::Manifest;
+pub use capabilities::{Capability, CapabilityManager};
+pub use event_protocol::Event;
