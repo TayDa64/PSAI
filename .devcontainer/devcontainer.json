@@ -21,10 +21,11 @@
     }
   },
 
-  // Request the largest available machine type for this large project
+  // Request a high-performance machine type for this large project
+  // Using 8 cores as minimum to ensure availability across regions
   "hostRequirements": {
-    "cpus": 32,
-    "memory": "64gb",
-    "storage": "128gb"
+    "cpus": 8,
+    "memory": "32gb",
+    "storage": "64gb"
   }
 }
