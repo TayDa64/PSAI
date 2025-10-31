@@ -1,0 +1,15 @@
+schema_version = "0.1"
+name = "Example Agent"
+version = "0.1.0"
+entry = "agent.wasm"
+sandbox = "wasm"
+
+capabilities = ["files.read", "network"]
+oauth_scopes = ["github:repo"]
+
+[resources]
+cpu = "500m"
+mem = "512Mi"
+
+[ui]
+hints = ["streaming", "diff"]

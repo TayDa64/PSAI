@@ -1,0 +1,42 @@
+version = "0.1"
+
+[workspace]
+detection = "explicit"
+auto_save = true
+
+[graphics]
+preferred = "kitty"
+fallback = ["overlay"]
+auto_benchmark = true
+legacy_support = []
+
+[layout.default]
+preset = "dashboard"
+panes = ["shell", "agent", "preview", "log"]
+
+[theme]
+name = "NeoCyan"
+background = "#0b0e10"
+foreground = "#c9d1d9"
+accent = "#00d1ff"
+
+[agents]
+enabled = []
+sandbox_default = "wasm"
+native_allowed = []
+policy = "user-choice"
+
+[retention]
+always_persist = ["diff", "log"]
+ephemeral = ["preview", "scratch"]
+days = 30
+max_mb = 1024
+
+[vault]
+backend = "os_keychain"
+auto_lock_minutes = 10
+key_derivation = "argon2id"
+
+[notifications]
+profile = "minimal"
+channels = ["tui"]
