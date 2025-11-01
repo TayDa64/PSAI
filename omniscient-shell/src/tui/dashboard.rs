@@ -19,6 +19,7 @@ use crate::utils::config::Config;
 use crate::graphics::GraphicsBackend;
 use crate::shell::PowerShellIntegration;
 use crate::tui::theme::Theme;
+use crate::tui::terminal_guard::TerminalGuard;
 
 pub struct Dashboard {
     config: Config,
@@ -46,9 +47,9 @@ impl Dashboard {
     }
 
     pub async fn run(&mut self) -> Result<()> {
-        // Setup terminal
-        enable_raw_mode()?;
-        stdout().execute(EnterAlternateScreen)?;
+        // Setup terminal with guard - ensures cleanup on early return or panic
+        let _guard = TerminalGuard::new()?;
+        
         let backend = CrosstermBackend::new(stdout());
         let mut terminal = Terminal::new(backend)?;
 
@@ -130,10 +131,7 @@ impl Dashboard {
             }
         }
 
-        // Cleanup
-        disable_raw_mode()?;
-        stdout().execute(LeaveAlternateScreen)?;
-
+        // Terminal cleanup handled automatically by TerminalGuard drop
         Ok(())
     }
 
