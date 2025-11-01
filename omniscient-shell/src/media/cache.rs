@@ -62,8 +62,11 @@ impl MediaCache {
         let max_size_bytes = self.max_size_mb * 1024 * 1024;
 
         if total_size > max_size_bytes {
-            tracing::info!("Cache size {} MB exceeds limit {} MB, pruning...", 
-                total_size / (1024 * 1024), self.max_size_mb);
+            tracing::info!(
+                "Cache size {} MB exceeds limit {} MB, pruning...",
+                total_size / (1024 * 1024),
+                self.max_size_mb
+            );
 
             // Sort by last accessed (LRU)
             let mut sorted: Vec<_> = entries.iter().collect();
@@ -78,7 +81,11 @@ impl MediaCache {
 
                 // Delete file
                 if let Err(e) = std::fs::remove_file(&entry.path) {
-                    tracing::warn!("Failed to delete cached file {}: {}", entry.path.display(), e);
+                    tracing::warn!(
+                        "Failed to delete cached file {}: {}",
+                        entry.path.display(),
+                        e
+                    );
                 }
 
                 entries.remove(*key);
@@ -93,7 +100,7 @@ impl MediaCache {
     /// Clear entire cache
     pub async fn clear(&self) -> Result<()> {
         let mut entries = self.entries.write().await;
-        
+
         for (_, entry) in entries.iter() {
             let _ = std::fs::remove_file(&entry.path);
         }
@@ -111,12 +118,11 @@ mod tests {
     #[tokio::test]
     async fn test_cache_operations() {
         let cache = MediaCache::new(100); // 100 MB
-        
-        cache.add(
-            "test".to_string(),
-            PathBuf::from("/tmp/test.jpg"),
-            1024,
-        ).await.unwrap();
+
+        cache
+            .add("test".to_string(), PathBuf::from("/tmp/test.jpg"), 1024)
+            .await
+            .unwrap();
 
         let path = cache.get("test").await;
         assert!(path.is_some());

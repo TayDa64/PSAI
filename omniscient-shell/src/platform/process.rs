@@ -1,7 +1,6 @@
 //! Platform-specific process abstractions
 
 use anyhow::Result;
-use std::process::Child;
 
 /// Process management
 pub struct ProcessManager;

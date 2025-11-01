@@ -3,7 +3,6 @@
 use anyhow::Result;
 use rusqlite::params;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 use crate::state::sqlite::SqliteStore;
 
@@ -28,7 +27,8 @@ impl EventLedger {
         let conn = self.store.connection().await;
         let conn = conn.lock().await;
 
-        let timestamp = event.timestamp
+        let timestamp = event
+            .timestamp
             .duration_since(std::time::UNIX_EPOCH)?
             .as_secs();
 
@@ -40,7 +40,11 @@ impl EventLedger {
             params![timestamp as i64, event_type, event.agent_id, data],
         )?;
 
-        tracing::debug!("Event appended to ledger: {} from {}", event_type, event.agent_id);
+        tracing::debug!(
+            "Event appended to ledger: {} from {}",
+            event_type,
+            event.agent_id
+        );
         Ok(())
     }
 
@@ -49,9 +53,8 @@ impl EventLedger {
         let conn = self.store.connection().await;
         let conn = conn.lock().await;
 
-        let mut stmt = conn.prepare(
-            "SELECT data FROM event_log WHERE agent_id = ?1 ORDER BY timestamp ASC"
-        )?;
+        let mut stmt =
+            conn.prepare("SELECT data FROM event_log WHERE agent_id = ?1 ORDER BY timestamp ASC")?;
 
         let events: Result<Vec<Event>> = stmt
             .query_map([agent_id], |row| {
@@ -73,9 +76,8 @@ impl EventLedger {
         let conn = self.store.connection().await;
         let conn = conn.lock().await;
 
-        let mut stmt = conn.prepare(
-            "SELECT data FROM event_log ORDER BY timestamp DESC LIMIT ?1"
-        )?;
+        let mut stmt =
+            conn.prepare("SELECT data FROM event_log ORDER BY timestamp DESC LIMIT ?1")?;
 
         let events: Result<Vec<Event>> = stmt
             .query_map([limit], |row| {

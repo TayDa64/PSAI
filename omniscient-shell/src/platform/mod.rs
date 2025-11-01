@@ -1,7 +1,9 @@
 //! Platform-specific abstractions
 
-pub mod process;
+#![allow(dead_code)]
+
 pub mod filesystem;
+pub mod process;
 pub mod sandbox;
 
 #[cfg(windows)]
@@ -13,7 +15,3 @@ pub mod windows {
 pub mod unix {
     // Unix-specific implementations
 }
-
-pub use process::ProcessManager;
-pub use filesystem::FileSystem;
-pub use sandbox::{SandboxConfig, apply_sandbox};

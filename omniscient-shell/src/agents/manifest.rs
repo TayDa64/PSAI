@@ -2,8 +2,8 @@
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
 use std::fs;
+use std::path::{Path, PathBuf};
 
 /// Agent manifest (schema v0.1)
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,13 +29,13 @@ pub enum SandboxMode {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ResourceLimits {
-    pub cpu: String,  // e.g., "500m"
-    pub mem: String,  // e.g., "512Mi"
+    pub cpu: String, // e.g., "500m"
+    pub mem: String, // e.g., "512Mi"
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UiHints {
-    pub hints: Vec<String>,  // e.g., ["streaming", "diff", "preview"]
+    pub hints: Vec<String>, // e.g., ["streaming", "diff", "preview"]
 }
 
 impl Manifest {

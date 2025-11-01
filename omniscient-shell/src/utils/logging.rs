@@ -1,6 +1,6 @@
 //! Logging utilities
 
-use tracing::{info, warn, error};
+use tracing::{error, info, warn};
 
 pub fn log_startup(version: &str) {
     info!("Omniscient Shell v{} starting", version);

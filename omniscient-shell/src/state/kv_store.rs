@@ -3,7 +3,6 @@
 use anyhow::Result;
 use rusqlite::params;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 use crate::state::sqlite::SqliteStore;
 
@@ -41,7 +40,7 @@ impl KVStore {
         let conn = conn.lock().await;
 
         let mut stmt = conn.prepare("SELECT value FROM kv_store WHERE key = ?1")?;
-        
+
         let result = stmt.query_row([key], |row| row.get(0));
 
         match result {
@@ -67,7 +66,7 @@ impl KVStore {
         let conn = conn.lock().await;
 
         let mut stmt = conn.prepare("SELECT key FROM kv_store")?;
-        
+
         let keys: Result<Vec<String>> = stmt
             .query_map([], |row| row.get(0))?
             .collect::<Result<Vec<_>, _>>()
@@ -87,12 +86,12 @@ mod tests {
         let kv = KVStore::new(store);
 
         kv.set("test_key", "test_value").await.unwrap();
-        
+
         let value = kv.get("test_key").await.unwrap();
         assert_eq!(value, Some("test_value".to_string()));
 
         kv.delete("test_key").await.unwrap();
-        
+
         let value = kv.get("test_key").await.unwrap();
         assert_eq!(value, None);
     }

@@ -31,13 +31,14 @@ impl AgentRegistry {
     /// Register an agent from a directory
     pub async fn register(&self, agent_dir: &Path) -> Result<()> {
         let manifest_path = agent_dir.join("manifest.toml");
-        
+
         if !manifest_path.exists() {
             anyhow::bail!("No manifest.toml found in {}", agent_dir.display());
         }
 
-        let manifest = Manifest::load(&manifest_path)
-            .with_context(|| format!("Failed to load agent manifest from {}", agent_dir.display()))?;
+        let manifest = Manifest::load(&manifest_path).with_context(|| {
+            format!("Failed to load agent manifest from {}", agent_dir.display())
+        })?;
 
         let agent_info = AgentInfo {
             manifest: manifest.clone(),
@@ -82,18 +83,19 @@ impl AgentRegistry {
             return Ok(());
         }
 
-        let entries = std::fs::read_dir(agents_dir)
-            .with_context(|| format!("Failed to read agents directory: {}", agents_dir.display()))?;
+        let entries = std::fs::read_dir(agents_dir).with_context(|| {
+            format!("Failed to read agents directory: {}", agents_dir.display())
+        })?;
 
         for entry in entries {
             let entry = entry?;
             let path = entry.path();
-            
+
             if path.is_dir() {
                 let manifest_path = path.join("manifest.toml");
                 if manifest_path.exists() {
                     match self.register(&path).await {
-                        Ok(()) => {},
+                        Ok(()) => {}
                         Err(e) => {
                             tracing::warn!("Failed to register agent in {}: {}", path.display(), e);
                         }
@@ -108,7 +110,8 @@ impl AgentRegistry {
     /// Get agents by sandbox mode
     pub async fn get_by_sandbox(&self, mode: SandboxMode) -> Vec<AgentInfo> {
         let agents = self.agents.read().await;
-        agents.values()
+        agents
+            .values()
             .filter(|info| info.manifest.sandbox == mode && info.enabled)
             .cloned()
             .collect()

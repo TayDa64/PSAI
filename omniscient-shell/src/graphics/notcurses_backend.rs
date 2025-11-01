@@ -1,7 +1,7 @@
 //! Notcurses graphics backend implementation
 
+use crate::graphics::backend::{BackendType, Capabilities, GraphicsBackend, Region};
 use anyhow::Result;
-use crate::graphics::backend::{GraphicsBackend, BackendType, Capabilities, Region};
 
 pub struct NotcursesBackend {
     capabilities: Capabilities,

@@ -23,7 +23,10 @@ impl PreviewAdapter {
     /// Check if file type is supported
     pub fn supports(&self, path: &Path) -> bool {
         if let Some(ext) = path.extension() {
-            matches!(ext.to_str(), Some("jpg") | Some("png") | Some("gif") | Some("mp4") | Some("webm"))
+            matches!(
+                ext.to_str(),
+                Some("jpg") | Some("png") | Some("gif") | Some("mp4") | Some("webm")
+            )
         } else {
             false
         }

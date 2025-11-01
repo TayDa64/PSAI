@@ -8,7 +8,10 @@ mod no_omniscience_tests {
     #[test]
     fn test_build_without_omniscience_compiles() {
         // This test simply existing and compiling proves the no-default-features path works
-        assert!(true, "Build compiled successfully without omniscience feature");
+        assert!(
+            true,
+            "Build compiled successfully without omniscience feature"
+        );
     }
 
     #[test]
@@ -31,7 +34,10 @@ mod omniscience_tests {
     fn test_oauth_module_available() {
         // When omniscience is enabled, the real oauth module should be available
         // This is verified at compile time by the conditional compilation
-        assert!(true, "OAuth module is available when omniscience is enabled");
+        assert!(
+            true,
+            "OAuth module is available when omniscience is enabled"
+        );
     }
 }
 
@@ -39,13 +45,16 @@ mod omniscience_tests {
 fn test_core_functionality_always_available() {
     // Core functionality should work regardless of feature flags
     // This test validates that basic imports work in both configurations
-    
+
     // These modules should always be available
     let _test = || {
         // Verify we can reference core modules
         use std::path::Path;
         let _p = Path::new("/test");
     };
-    
-    assert!(true, "Core functionality is available in all configurations");
+
+    assert!(
+        true,
+        "Core functionality is available in all configurations"
+    );
 }

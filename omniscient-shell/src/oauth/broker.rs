@@ -2,10 +2,8 @@
 
 use anyhow::Result;
 use oauth2::{
-    AuthUrl, ClientId, DeviceAuthorizationUrl, Scope, TokenUrl,
-    basic::BasicClient,
-    reqwest::async_http_client,
-    DeviceAuthorizationResponse, EmptyExtraDeviceAuthorizationFields,
+    basic::BasicClient, reqwest::async_http_client, AuthUrl, ClientId, DeviceAuthorizationResponse,
+    DeviceAuthorizationUrl, EmptyExtraDeviceAuthorizationFields, Scope, TokenUrl,
 };
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -58,7 +56,8 @@ impl OAuthBroker {
         scopes: Vec<String>,
     ) -> Result<TokenHandle> {
         let providers = self.providers.read().await;
-        let config = providers.get(provider)
+        let config = providers
+            .get(provider)
             .ok_or_else(|| anyhow::anyhow!("Provider not found: {}", provider))?;
 
         tracing::info!("Starting device code flow for provider: {}", provider);
@@ -78,11 +77,12 @@ impl OAuthBroker {
         };
 
         // Request device authorization
-        let device_auth: DeviceAuthorizationResponse<oauth2::EmptyExtraDeviceAuthorizationFields> = client
-            .exchange_device_code()?
-            .add_scopes(scopes.iter().map(|s| Scope::new(s.clone())))
-            .request_async(async_http_client)
-            .await?;
+        let device_auth: DeviceAuthorizationResponse<oauth2::EmptyExtraDeviceAuthorizationFields> =
+            client
+                .exchange_device_code()?
+                .add_scopes(scopes.iter().map(|s| Scope::new(s.clone())))
+                .request_async(async_http_client)
+                .await?;
 
         // Display user code and verification URL
         tracing::info!("Device code: {}", device_auth.user_code().secret());
@@ -114,7 +114,7 @@ impl OAuthBroker {
         scopes: Vec<String>,
     ) -> Result<TokenHandle> {
         tracing::info!("Starting PKCE flow for provider: {}", provider);
-        
+
         // Placeholder for PKCE implementation
         // Real implementation would:
         // 1. Generate code verifier and challenge
@@ -122,7 +122,7 @@ impl OAuthBroker {
         // 3. Handle callback
         // 4. Exchange code for token
         // 5. Store in vault
-        
+
         let handle_id = uuid::Uuid::new_v4().to_string();
         let handle = TokenHandle {
             id: handle_id.clone(),
@@ -138,26 +138,26 @@ impl OAuthBroker {
     /// Refresh a token
     pub async fn refresh(&self, handle: &TokenHandle) -> Result<()> {
         tracing::info!("Refreshing token for handle: {}", handle.id);
-        
+
         // Real implementation would:
         // 1. Retrieve refresh token from vault
         // 2. Exchange for new access token
         // 3. Update vault
-        
+
         Ok(())
     }
 
     /// Revoke a token
     pub async fn revoke(&self, handle: &TokenHandle) -> Result<()> {
         tracing::info!("Revoking token for handle: {}", handle.id);
-        
+
         // Real implementation would:
         // 1. Call provider's revocation endpoint
         // 2. Remove from vault
         // 3. Log in consent ledger
-        
+
         self.vault.delete(&handle.id).await?;
-        
+
         Ok(())
     }
 
@@ -175,7 +175,7 @@ mod tests {
     async fn test_broker_creation() {
         let vault = Arc::new(TokenVault::new_in_memory());
         let broker = OAuthBroker::new(vault);
-        
+
         // Test provider registration
         let config = ProviderConfig {
             client_id: "test-client".to_string(),
@@ -184,7 +184,7 @@ mod tests {
             device_auth_url: None,
             scopes: vec!["read".to_string()],
         };
-        
+
         broker.register_provider("test".to_string(), config).await;
     }
 }

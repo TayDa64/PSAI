@@ -87,7 +87,12 @@ impl ConsentLedger {
     }
 
     /// Log a denial
-    pub async fn log_deny(&self, agent_id: String, capability: String, reason: String) -> Result<()> {
+    pub async fn log_deny(
+        &self,
+        agent_id: String,
+        capability: String,
+        reason: String,
+    ) -> Result<()> {
         let entry = ConsentEntry {
             timestamp: SystemTime::now(),
             agent_id: agent_id.clone(),
@@ -101,7 +106,12 @@ impl ConsentLedger {
         let mut entries = self.entries.write().await;
         entries.push(entry);
 
-        tracing::info!("Consent denied: {} -> {} ({})", agent_id, capability, reason);
+        tracing::info!(
+            "Consent denied: {} -> {} ({})",
+            agent_id,
+            capability,
+            reason
+        );
         Ok(())
     }
 

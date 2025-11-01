@@ -1,13 +1,15 @@
 //! Graphics backend negotiation and abstraction
 
+#![allow(dead_code)]
+
 pub mod backend;
-pub mod notcurses_backend;
 pub mod kitty_backend;
+pub mod notcurses_backend;
 pub mod overlay_backend;
 
-use anyhow::Result;
 use crate::utils::config::GraphicsConfig;
-pub use backend::{GraphicsBackend, BackendType, Capabilities, Region};
+use anyhow::Result;
+pub use backend::GraphicsBackend;
 
 /// Negotiate and initialize the best available graphics backend
 pub fn negotiate_backend(config: &GraphicsConfig) -> Result<Box<dyn GraphicsBackend>> {
@@ -29,7 +31,7 @@ pub fn negotiate_backend(config: &GraphicsConfig) -> Result<Box<dyn GraphicsBack
     try_backend("overlay", config)
 }
 
-fn try_backend(name: &str, config: &GraphicsConfig) -> Result<Box<dyn GraphicsBackend>> {
+fn try_backend(name: &str, _config: &GraphicsConfig) -> Result<Box<dyn GraphicsBackend>> {
     match name {
         "notcurses" => {
             #[cfg(feature = "notcurses")]

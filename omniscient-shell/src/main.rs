@@ -1,20 +1,19 @@
 //! Omniscient Shell - AI-native companion shell extending PowerShell
-//! 
+//!
 //! Phase 1: Core + TUI implementation
 
 use anyhow::Result;
 use clap::Parser;
 use tracing::{info, warn};
-use tracing_subscriber;
 
-mod utils;
-mod shell;
-mod tui;
 mod graphics;
-mod platform;
-mod state;
-mod workspace;
 mod notifications;
+mod platform;
+mod shell;
+mod state;
+mod tui;
+mod utils;
+mod workspace;
 
 // Media features (optional)
 #[cfg(feature = "media")]
@@ -22,9 +21,9 @@ mod media;
 
 // Conditionally compile OAuth module based on omniscience feature
 #[cfg(feature = "omniscience")]
-mod oauth;
-#[cfg(feature = "omniscience")]
 mod agents;
+#[cfg(feature = "omniscience")]
+mod oauth;
 #[cfg(feature = "omniscience")]
 mod security;
 
@@ -34,8 +33,8 @@ mod oauth_shim;
 #[cfg(not(feature = "omniscience"))]
 use oauth_shim as oauth;
 
-use crate::utils::config::{Config, load_config};
 use crate::tui::dashboard::Dashboard;
+use crate::utils::config::{load_config, Config};
 
 /// Omniscient Shell - AI-native companion shell extending PowerShell
 #[derive(Parser, Debug)]
@@ -55,7 +54,7 @@ async fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::from_default_env()
-                .add_directive(tracing::Level::INFO.into())
+                .add_directive(tracing::Level::INFO.into()),
         )
         .init();
 
@@ -71,7 +70,7 @@ async fn main() -> Result<()> {
             info!("Omniscience features enabled");
         }
     }
-    
+
     #[cfg(not(feature = "omniscience"))]
     {
         info!("Omniscience features not available (feature not compiled)");
@@ -95,21 +94,27 @@ async fn main() -> Result<()> {
 
     // Validate schema version
     if config.version != "0.1" {
-        anyhow::bail!("Unsupported config version: {}. Expected 0.1. Please update your config file.", config.version);
+        anyhow::bail!(
+            "Unsupported config version: {}. Expected 0.1. Please update your config file.",
+            config.version
+        );
     }
 
     // Initialize graphics backend
     let graphics_backend = graphics::negotiate_backend(&config.graphics)?;
-    info!("Graphics backend selected: {:?}", graphics_backend.backend_type());
+    info!(
+        "Graphics backend selected: {:?}",
+        graphics_backend.backend_type()
+    );
 
     // Initialize PowerShell integration
-    let mut shell_integration = shell::PowerShellIntegration::new()?;
+    let shell_integration = shell::PowerShellIntegration::new()?;
     info!("PowerShell integration initialized");
 
     // Create and run dashboard
     let mut dashboard = Dashboard::new(config, graphics_backend, shell_integration)?;
     info!("Dashboard initialized, starting main loop...");
-    
+
     dashboard.run().await?;
 
     info!("Omniscient Shell shutting down");

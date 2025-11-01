@@ -1,8 +1,8 @@
 //! Encrypted token vault with OS keychain integration
 
 use anyhow::Result;
+use argon2::password_hash::{rand_core::OsRng, SaltString};
 use argon2::{Argon2, PasswordHasher};
-use argon2::password_hash::{SaltString, rand_core::OsRng};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -11,7 +11,7 @@ use tokio::sync::RwLock;
 pub enum VaultBackend {
     OsKeychain,
     EncryptedSqlite(String), // path
-    InMemory, // For testing
+    InMemory,                // For testing
 }
 
 /// Token vault for secure storage
@@ -106,13 +106,15 @@ impl TokenVault {
             VaultBackend::EncryptedSqlite(_path) => {
                 // Placeholder for encrypted SQLite retrieval
                 let store = self.in_memory_store.read().await;
-                store.get(label)
+                store
+                    .get(label)
                     .cloned()
                     .ok_or_else(|| anyhow::anyhow!("Token not found: {}", label))
             }
             VaultBackend::InMemory => {
                 let store = self.in_memory_store.read().await;
-                store.get(label)
+                store
+                    .get(label)
                     .cloned()
                     .ok_or_else(|| anyhow::anyhow!("Token not found: {}", label))
             }
@@ -192,17 +194,17 @@ mod tests {
     #[tokio::test]
     async fn test_in_memory_vault() {
         let vault = TokenVault::new_in_memory();
-        
+
         // Store token
         vault.store("test-token", "secret-value").await.unwrap();
-        
+
         // Fetch token
         let token = vault.fetch("test-token").await.unwrap();
         assert_eq!(token, "secret-value");
-        
+
         // Delete token
         vault.delete("test-token").await.unwrap();
-        
+
         // Should fail to fetch after delete
         assert!(vault.fetch("test-token").await.is_err());
     }
@@ -210,24 +212,24 @@ mod tests {
     #[tokio::test]
     async fn test_vault_locking() {
         let vault = TokenVault::new_in_memory();
-        
+
         // Store when unlocked
         vault.store("test", "value").await.unwrap();
-        
+
         // Lock vault
         vault.lock().await;
         assert!(vault.is_locked().await);
-        
+
         // Should fail to store when locked
         assert!(vault.store("test2", "value2").await.is_err());
-        
+
         // Should fail to fetch when locked
         assert!(vault.fetch("test").await.is_err());
-        
+
         // Unlock and retry
         vault.unlock().await;
         assert!(!vault.is_locked().await);
-        
+
         let token = vault.fetch("test").await.unwrap();
         assert_eq!(token, "value");
     }

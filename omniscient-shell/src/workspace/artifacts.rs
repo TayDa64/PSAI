@@ -1,9 +1,8 @@
 //! Artifact management
 
-use anyhow::Result;
-use std::path::{Path, PathBuf};
-use std::time::SystemTime;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
+use std::time::SystemTime;
 
 /// Artifact metadata
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18,9 +17,7 @@ pub struct Artifact {
 
 impl Artifact {
     pub fn new(id: String, kind: String, path: PathBuf) -> Self {
-        let size_bytes = std::fs::metadata(&path)
-            .map(|m| m.len())
-            .unwrap_or(0);
+        let size_bytes = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
 
         Artifact {
             id,

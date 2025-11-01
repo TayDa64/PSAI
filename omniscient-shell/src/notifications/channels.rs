@@ -1,7 +1,7 @@
 //! Notification channels
 
-use anyhow::Result;
 use crate::notifications::profiles::Priority;
+use anyhow::Result;
 
 /// Notification message
 #[derive(Debug, Clone)]

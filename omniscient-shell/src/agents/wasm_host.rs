@@ -4,7 +4,7 @@ use anyhow::Result;
 use std::path::Path;
 
 #[cfg(feature = "wasm")]
-use wasmtime::{Engine, Module, Store, Instance, Linker};
+use wasmtime::{Engine, Instance, Linker, Module, Store};
 #[cfg(feature = "wasm")]
 use wasmtime_wasi::{WasiCtx, WasiCtxBuilder};
 

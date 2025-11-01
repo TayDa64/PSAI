@@ -1,6 +1,8 @@
 //! OAuth shim when omniscience feature is disabled
 //! Provides minimal stubs to allow compilation without full OAuth functionality
 
+#![allow(dead_code)]
+
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
@@ -19,7 +21,9 @@ pub struct TokenVault;
 
 impl TokenVault {
     pub fn new_in_memory() -> Self {
-        tracing::warn!("OAuth functionality is disabled. To enable, build with --features omniscience");
+        tracing::warn!(
+            "OAuth functionality is disabled. To enable, build with --features omniscience"
+        );
         TokenVault
     }
 }
@@ -78,4 +82,3 @@ impl Event {
         }
     }
 }
-
