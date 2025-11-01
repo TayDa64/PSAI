@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Process supervision for PowerShell instances
 
 use std::process::Child;

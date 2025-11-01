@@ -1,21 +1,22 @@
+#![allow(dead_code)]
 //! Graphics backend negotiation and abstraction
 
 pub mod backend;
-pub mod notcurses_backend;
 pub mod kitty_backend;
+pub mod notcurses_backend;
 pub mod overlay_backend;
 
 use anyhow::Result;
 use crate::utils::config::GraphicsConfig;
-pub use backend::{GraphicsBackend, BackendType, Capabilities, Region};
+pub use backend::{BackendType, Capabilities, GraphicsBackend, Region};
 
 /// Negotiate and initialize the best available graphics backend
-pub fn negotiate_backend(config: &GraphicsConfig) -> Result<Box<dyn GraphicsBackend>> {
-    let mut backends_to_try = vec![config.preferred.as_str()];
-    backends_to_try.extend(config.fallback.iter().map(|s| s.as_str()));
+pub fn negotiate_backend(_config: &GraphicsConfig) -> Result<Box<dyn GraphicsBackend>> {
+    let mut backends_to_try = vec![_config.preferred.as_str()];
+    backends_to_try.extend(_config.fallback.iter().map(|s| s.as_str()));
 
     for backend_name in backends_to_try {
-        match try_backend(backend_name, config) {
+        match try_backend(backend_name, _config) {
             Ok(backend) => return Ok(backend),
             Err(e) => {
                 tracing::warn!("Failed to initialize {} backend: {}", backend_name, e);
@@ -26,10 +27,10 @@ pub fn negotiate_backend(config: &GraphicsConfig) -> Result<Box<dyn GraphicsBack
 
     // Final fallback to overlay
     tracing::warn!("All preferred backends failed, falling back to overlay");
-    try_backend("overlay", config)
+    try_backend("overlay", _config)
 }
 
-fn try_backend(name: &str, config: &GraphicsConfig) -> Result<Box<dyn GraphicsBackend>> {
+fn try_backend(name: &str, _config: &GraphicsConfig) -> Result<Box<dyn GraphicsBackend>> {
     match name {
         "notcurses" => {
             #[cfg(feature = "notcurses")]

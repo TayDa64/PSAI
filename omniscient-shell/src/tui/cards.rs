@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Card widgets for displaying content
 
 pub struct Card {

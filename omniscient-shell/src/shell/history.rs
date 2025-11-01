@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Command history management
 
 use std::sync::Arc;
@@ -19,7 +20,7 @@ impl History {
     pub async fn add(&self, command: String) {
         let mut commands = self.commands.lock().await;
         commands.push(command);
-        
+
         // Trim to max size
         if commands.len() > self.max_size {
             commands.remove(0);
@@ -33,7 +34,8 @@ impl History {
 
     pub async fn search(&self, query: &str) -> Vec<String> {
         let commands = self.commands.lock().await;
-        commands.iter()
+        commands
+            .iter()
             .filter(|cmd| cmd.contains(query))
             .cloned()
             .collect()

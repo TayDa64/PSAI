@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Telemetry system (opt-in only, performance metrics, no secrets)
 
 use anyhow::Result;
@@ -124,16 +125,19 @@ impl TelemetryCollector {
         let name = metric.name.clone();
         let metadata = metric.metadata.clone();
         let duration_ms = metric.finish().as_millis() as u64;
-        self.record_event(name, Some(duration_ms), metadata, success).await
+        self.record_event(name, Some(duration_ms), metadata, success)
+            .await
     }
 
     /// Sanitize metadata to remove sensitive information
     fn sanitize_metadata(&self, mut metadata: HashMap<String, String>) -> HashMap<String, String> {
         // Remove any keys that might contain secrets
         let sensitive_keys = ["token", "password", "secret", "key", "auth", "credential"];
-        
+
         metadata.retain(|k, _| {
-            !sensitive_keys.iter().any(|&sensitive| k.to_lowercase().contains(sensitive))
+            !sensitive_keys
+                .iter()
+                .any(|&sensitive| k.to_lowercase().contains(sensitive))
         });
 
         // Truncate long values
@@ -150,16 +154,27 @@ impl TelemetryCollector {
     /// Get summary statistics
     pub async fn get_summary(&self) -> TelemetrySummary {
         let events = self.events.read().await;
-        
+
         let total_events = events.len();
         let successful_events = events.iter().filter(|e| e.success).count();
         let failed_events = total_events - successful_events;
 
-        let avg_duration = if !events.is_empty() {
-            let sum: u64 = events.iter()
-                .filter_map(|e| e.duration_ms)
-                .sum();
-            Some(sum / events.len() as u64)
+        // Calculate average only over events that have a duration
+        let events_with_duration: Vec<u64> = events.iter().filter_map(|e| e.duration_ms).collect();
+
+        let avg_duration = if !events_with_duration.is_empty() {
+            // Use u128 to prevent overflow during sum
+            let sum: u128 = events_with_duration.iter().map(|&d| d as u128).sum();
+            let count = events_with_duration.len() as u128;
+
+            // Guard against divide-by-zero (already checked above, but be explicit)
+            if count > 0 {
+                let avg = sum / count;
+                // Clamp to u64::MAX if overflow would occur
+                Some(avg.min(u64::MAX as u128) as u64)
+            } else {
+                None
+            }
         } else {
             None
         };
@@ -173,12 +188,14 @@ impl TelemetryCollector {
     }
 
     /// Clear all events
+    #[allow(dead_code)]
     pub async fn clear(&self) {
         let mut events = self.events.write().await;
         events.clear();
     }
 
     /// Enable telemetry
+    #[allow(dead_code)]
     pub async fn enable(&self) {
         let mut config = self.config.write().await;
         config.enabled = true;
@@ -186,14 +203,15 @@ impl TelemetryCollector {
     }
 
     /// Disable telemetry
+    #[allow(dead_code)]
     pub async fn disable(&self) {
         let mut config = self.config.write().await;
         config.enabled = false;
-        
+
         // Clear existing data
         let mut events = self.events.write().await;
         events.clear();
-        
+
         tracing::info!("Telemetry disabled and data cleared");
     }
 }
@@ -225,14 +243,19 @@ mod tests {
 
     #[tokio::test]
     async fn test_record_event() {
-        let mut config = TelemetryConfig::default();
-        config.enabled = true;
+        let config = TelemetryConfig {
+            enabled: true,
+            ..Default::default()
+        };
         let collector = TelemetryCollector::new(config);
 
         let mut metadata = HashMap::new();
         metadata.insert("operation".to_string(), "test".to_string());
 
-        collector.record_event("test_event", Some(100), metadata, true).await.unwrap();
+        collector
+            .record_event("test_event", Some(100), metadata, true)
+            .await
+            .unwrap();
 
         let summary = collector.get_summary().await;
         assert_eq!(summary.total_events, 1);
@@ -241,15 +264,20 @@ mod tests {
 
     #[tokio::test]
     async fn test_metadata_sanitization() {
-        let mut config = TelemetryConfig::default();
-        config.enabled = true;
+        let config = TelemetryConfig {
+            enabled: true,
+            ..Default::default()
+        };
         let collector = TelemetryCollector::new(config);
 
         let mut metadata = HashMap::new();
         metadata.insert("operation".to_string(), "test".to_string());
         metadata.insert("token".to_string(), "secret123".to_string()); // Should be removed
 
-        collector.record_event("test", None, metadata, true).await.unwrap();
+        collector
+            .record_event("test", None, metadata, true)
+            .await
+            .unwrap();
 
         let events = collector.events.read().await;
         assert!(!events[0].metadata.contains_key("token"));
@@ -258,12 +286,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_performance_metric() {
-        let mut config = TelemetryConfig::default();
-        config.enabled = true;
+        let config = TelemetryConfig {
+            enabled: true,
+            ..Default::default()
+        };
         let collector = TelemetryCollector::new(config);
 
-        let metric = PerformanceMetric::new("test_operation")
-            .with_metadata("type", "unittest");
+        let metric = PerformanceMetric::new("test_operation").with_metadata("type", "unittest");
 
         tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
 
@@ -272,5 +301,102 @@ mod tests {
         let summary = collector.get_summary().await;
         assert_eq!(summary.total_events, 1);
         assert!(summary.avg_duration_ms.unwrap() >= 10);
+    }
+
+    #[tokio::test]
+    async fn test_average_with_no_duration_events() {
+        let config = TelemetryConfig {
+            enabled: true,
+            ..Default::default()
+        };
+        let collector = TelemetryCollector::new(config);
+
+        // Add events without duration
+        let metadata = HashMap::new();
+        collector
+            .record_event("event1", None, metadata.clone(), true)
+            .await
+            .unwrap();
+        collector
+            .record_event("event2", None, metadata.clone(), true)
+            .await
+            .unwrap();
+        collector
+            .record_event("event3", None, metadata, true)
+            .await
+            .unwrap();
+
+        let summary = collector.get_summary().await;
+        assert_eq!(summary.total_events, 3);
+        assert_eq!(summary.avg_duration_ms, None); // No duration events, so no average
+    }
+
+    #[tokio::test]
+    async fn test_average_with_mixed_duration_events() {
+        let config = TelemetryConfig {
+            enabled: true,
+            ..Default::default()
+        };
+        let collector = TelemetryCollector::new(config);
+
+        let metadata = HashMap::new();
+        collector
+            .record_event("event1", Some(100), metadata.clone(), true)
+            .await
+            .unwrap();
+        collector
+            .record_event("event2", None, metadata.clone(), true)
+            .await
+            .unwrap();
+        collector
+            .record_event("event3", Some(200), metadata.clone(), true)
+            .await
+            .unwrap();
+        collector
+            .record_event("event4", None, metadata, true)
+            .await
+            .unwrap();
+
+        let summary = collector.get_summary().await;
+        assert_eq!(summary.total_events, 4);
+        // Average should be (100 + 200) / 2 = 150, only counting events with duration
+        assert_eq!(summary.avg_duration_ms, Some(150));
+    }
+
+    #[tokio::test]
+    async fn test_average_overflow_protection() {
+        let config = TelemetryConfig {
+            enabled: true,
+            ..Default::default()
+        };
+        let collector = TelemetryCollector::new(config);
+
+        // Add events with very large durations to test overflow protection
+        let metadata = HashMap::new();
+        collector
+            .record_event("event1", Some(u64::MAX / 2), metadata.clone(), true)
+            .await
+            .unwrap();
+        collector
+            .record_event("event2", Some(u64::MAX / 2), metadata, true)
+            .await
+            .unwrap();
+
+        let summary = collector.get_summary().await;
+        assert_eq!(summary.total_events, 2);
+        // Should not panic and should return a valid result
+        assert!(summary.avg_duration_ms.is_some());
+        // The average should be around u64::MAX / 2
+        assert!(summary.avg_duration_ms.unwrap() > 0);
+    }
+
+    #[tokio::test]
+    async fn test_divide_by_zero_protection() {
+        let collector = TelemetryCollector::default();
+
+        // Get summary with no events
+        let summary = collector.get_summary().await;
+        assert_eq!(summary.total_events, 0);
+        assert_eq!(summary.avg_duration_ms, None); // Should not panic
     }
 }

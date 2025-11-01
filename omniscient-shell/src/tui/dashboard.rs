@@ -1,24 +1,22 @@
+#![allow(dead_code)]
 //! Dashboard - main TUI layout with panes
 
 use anyhow::Result;
-use crossterm::{
-    event::{self, Event, KeyCode, KeyEvent},
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-    ExecutableCommand,
-};
+use crossterm::event::{self, Event, KeyCode, KeyEvent};
 use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout},
-    style::{Color, Style},
+    style::Style,
     widgets::{Block, Borders, Paragraph},
     Terminal,
 };
 use std::io::stdout;
 
-use crate::utils::config::Config;
 use crate::graphics::GraphicsBackend;
 use crate::shell::PowerShellIntegration;
+use crate::tui::terminal_guard::TerminalGuard;
 use crate::tui::theme::Theme;
+use crate::utils::config::Config;
 
 pub struct Dashboard {
     config: Config,
@@ -35,7 +33,7 @@ impl Dashboard {
         shell: PowerShellIntegration,
     ) -> Result<Self> {
         let theme = Theme::from_config(&config.theme);
-        
+
         Ok(Dashboard {
             config,
             theme,
@@ -46,9 +44,9 @@ impl Dashboard {
     }
 
     pub async fn run(&mut self) -> Result<()> {
-        // Setup terminal
-        enable_raw_mode()?;
-        stdout().execute(EnterAlternateScreen)?;
+        // Setup terminal with guard - ensures cleanup on early return or panic
+        let _guard = TerminalGuard::new()?;
+
         let backend = CrosstermBackend::new(stdout());
         let mut terminal = Terminal::new(backend)?;
 
@@ -59,30 +57,21 @@ impl Dashboard {
             // Draw UI
             terminal.draw(|frame| {
                 let size = frame.area();
-                
+
                 // Create layout based on config
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
-                    .constraints([
-                        Constraint::Percentage(60),
-                        Constraint::Percentage(40),
-                    ])
+                    .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
                     .split(size);
 
                 let top_chunks = Layout::default()
                     .direction(Direction::Horizontal)
-                    .constraints([
-                        Constraint::Percentage(60),
-                        Constraint::Percentage(40),
-                    ])
+                    .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
                     .split(chunks[0]);
 
                 let bottom_chunks = Layout::default()
                     .direction(Direction::Horizontal)
-                    .constraints([
-                        Constraint::Percentage(50),
-                        Constraint::Percentage(50),
-                    ])
+                    .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
                     .split(chunks[1]);
 
                 // Shell pane
@@ -90,8 +79,8 @@ impl Dashboard {
                     .title("Shell")
                     .borders(Borders::ALL)
                     .style(Style::default().fg(self.theme.foreground));
-                let shell_content = Paragraph::new("PowerShell console will appear here...")
-                    .block(shell_block);
+                let shell_content =
+                    Paragraph::new("PowerShell console will appear here...").block(shell_block);
                 frame.render_widget(shell_content, top_chunks[0]);
 
                 // Agent pane
@@ -99,8 +88,8 @@ impl Dashboard {
                     .title("Agent Console")
                     .borders(Borders::ALL)
                     .style(Style::default().fg(self.theme.foreground));
-                let agent_content = Paragraph::new("AI agent outputs will stream here...")
-                    .block(agent_block);
+                let agent_content =
+                    Paragraph::new("AI agent outputs will stream here...").block(agent_block);
                 frame.render_widget(agent_content, top_chunks[1]);
 
                 // Preview pane
@@ -108,8 +97,8 @@ impl Dashboard {
                     .title("Preview")
                     .borders(Borders::ALL)
                     .style(Style::default().fg(self.theme.foreground));
-                let preview_content = Paragraph::new("Media and file previews...")
-                    .block(preview_block);
+                let preview_content =
+                    Paragraph::new("Media and file previews...").block(preview_block);
                 frame.render_widget(preview_content, bottom_chunks[0]);
 
                 // Log pane
@@ -117,8 +106,7 @@ impl Dashboard {
                     .title("Log")
                     .borders(Borders::ALL)
                     .style(Style::default().fg(self.theme.foreground));
-                let log_content = Paragraph::new("System logs and errors...")
-                    .block(log_block);
+                let log_content = Paragraph::new("System logs and errors...").block(log_block);
                 frame.render_widget(log_content, bottom_chunks[1]);
             })?;
 
@@ -130,10 +118,7 @@ impl Dashboard {
             }
         }
 
-        // Cleanup
-        disable_raw_mode()?;
-        stdout().execute(LeaveAlternateScreen)?;
-
+        // Terminal cleanup handled automatically by TerminalGuard drop
         Ok(())
     }
 
