@@ -110,7 +110,8 @@ mod tests {
     #[tokio::test]
     async fn test_in_memory_store() {
         let store = SqliteStore::in_memory().unwrap();
-        // Basic creation test
-        assert!(store.conn.lock().await.is_ok());
+        // Basic creation test - just verify we can lock the connection
+        let _guard = store.conn.lock().await;
+        // If we got here, the store was created successfully
     }
 }

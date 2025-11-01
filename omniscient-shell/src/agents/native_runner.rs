@@ -2,9 +2,9 @@
 
 use anyhow::Result;
 use std::path::Path;
-use std::process::{Command, Child, Stdio};
+use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::process::Command as TokioCommand;
+use tokio::process::{Command as TokioCommand, Child};
 
 pub struct NativeRunner {
     // Process isolation configuration
@@ -44,7 +44,7 @@ impl NativeRunner {
     #[cfg(target_os = "windows")]
     fn spawn_windows(&self, executable: &Path, args: &[String]) -> Result<Child> {
         // Windows Job Objects implementation
-        let child = Command::new(executable)
+        let child = TokioCommand::new(executable)
             .args(args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -72,7 +72,7 @@ impl NativeRunner {
     #[cfg(target_os = "macos")]
     fn spawn_macos(&self, executable: &Path, args: &[String]) -> Result<Child> {
         // macOS sandbox-exec implementation
-        let child = Command::new("sandbox-exec")
+        let child = TokioCommand::new("sandbox-exec")
             .arg("-f")
             .arg("/dev/null")  // Sandbox profile (to be implemented)
             .arg(executable)

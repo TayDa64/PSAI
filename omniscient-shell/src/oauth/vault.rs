@@ -128,7 +128,7 @@ impl TokenVault {
         match &self.backend {
             VaultBackend::OsKeychain => {
                 let entry = keyring::Entry::new("omniscient-shell", label)?;
-                entry.delete_password()?;
+                entry.delete_credential()?;
                 tracing::info!("Deleted token from OS keychain: {}", label);
                 Ok(())
             }

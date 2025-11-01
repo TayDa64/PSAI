@@ -5,7 +5,7 @@ use oauth2::{
     AuthUrl, ClientId, DeviceAuthorizationUrl, Scope, TokenUrl,
     basic::BasicClient,
     reqwest::async_http_client,
-    DeviceAuthorizationResponse,
+    DeviceAuthorizationResponse, EmptyExtraDeviceAuthorizationFields,
 };
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -78,7 +78,7 @@ impl OAuthBroker {
         };
 
         // Request device authorization
-        let device_auth = client
+        let device_auth: DeviceAuthorizationResponse<oauth2::EmptyExtraDeviceAuthorizationFields> = client
             .exchange_device_code()?
             .add_scopes(scopes.iter().map(|s| Scope::new(s.clone())))
             .request_async(async_http_client)
@@ -86,7 +86,7 @@ impl OAuthBroker {
 
         // Display user code and verification URL
         tracing::info!("Device code: {}", device_auth.user_code().secret());
-        tracing::info!("Verification URL: {}", device_auth.verification_uri());
+        tracing::info!("Verification URL: {:?}", device_auth.verification_uri());
 
         // In a real implementation:
         // 1. Display the code to the user in the TUI

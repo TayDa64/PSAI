@@ -3,6 +3,7 @@
 //! Phase 1: Core + TUI implementation
 
 use anyhow::Result;
+use clap::Parser;
 use tracing::{info, warn};
 use tracing_subscriber;
 
@@ -10,12 +11,46 @@ mod utils;
 mod shell;
 mod tui;
 mod graphics;
+mod platform;
+mod state;
+mod workspace;
+mod notifications;
+
+// Media features (optional)
+#[cfg(feature = "media")]
+mod media;
+
+// Conditionally compile OAuth module based on omniscience feature
+#[cfg(feature = "omniscience")]
+mod oauth;
+#[cfg(feature = "omniscience")]
+mod agents;
+#[cfg(feature = "omniscience")]
+mod security;
+
+// Use shim when omniscience is disabled
+#[cfg(not(feature = "omniscience"))]
+mod oauth_shim;
+#[cfg(not(feature = "omniscience"))]
+use oauth_shim as oauth;
 
 use crate::utils::config::{Config, load_config};
 use crate::tui::dashboard::Dashboard;
 
+/// Omniscient Shell - AI-native companion shell extending PowerShell
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Skip omniscience initialization even if the feature is compiled in
+    #[arg(long)]
+    no_omniscience: bool,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Parse command line arguments
+    let args = Args::parse();
+
     // Initialize logging
     tracing_subscriber::fmt()
         .with_env_filter(
@@ -25,6 +60,26 @@ async fn main() -> Result<()> {
         .init();
 
     info!("Omniscient Shell v0.1.0 starting...");
+
+    // Log omniscience status
+    #[cfg(feature = "omniscience")]
+    {
+        if args.no_omniscience {
+            info!("Omniscience features disabled via --no-omniscience flag");
+            info!("To enable omniscience: remove --no-omniscience flag");
+        } else {
+            info!("Omniscience features enabled");
+        }
+    }
+    
+    #[cfg(not(feature = "omniscience"))]
+    {
+        info!("Omniscience features not available (feature not compiled)");
+        info!("To enable omniscience: build with --features omniscience");
+        if args.no_omniscience {
+            warn!("--no-omniscience flag is redundant when omniscience feature is not compiled");
+        }
+    }
 
     // Load configuration
     let config = match load_config() {

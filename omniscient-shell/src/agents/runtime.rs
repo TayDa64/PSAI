@@ -88,8 +88,17 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(feature = "wasm")]
     fn test_runtime_creation() {
         let runtime = AgentRuntime::new();
         assert!(runtime.is_ok());
+    }
+
+    #[test]
+    #[cfg(not(feature = "wasm"))]
+    fn test_runtime_creation_without_wasm() {
+        let runtime = AgentRuntime::new();
+        // Without WASM feature, runtime creation should fail gracefully
+        assert!(runtime.is_err());
     }
 }

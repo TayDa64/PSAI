@@ -6,7 +6,12 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use crate::state::sqlite::SqliteStore;
+
+#[cfg(feature = "omniscience")]
 use crate::agents::event_protocol::Event;
+
+#[cfg(not(feature = "omniscience"))]
+use crate::oauth::Event;
 
 /// Event ledger
 pub struct EventLedger {
