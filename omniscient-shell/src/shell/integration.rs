@@ -14,8 +14,7 @@ pub struct PowerShellIntegration {
 impl PowerShellIntegration {
     /// Create a new PowerShell integration instance
     pub fn new() -> Result<Self> {
-        let pwsh_path = Self::find_powershell()
-            .context("Failed to find PowerShell executable")?;
+        let pwsh_path = Self::find_powershell().context("Failed to find PowerShell executable")?;
 
         Ok(PowerShellIntegration {
             pwsh_path,

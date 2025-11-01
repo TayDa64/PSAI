@@ -20,7 +20,7 @@ impl Workspace {
     /// Select a workspace (explicit selection required)
     pub async fn select(&self, path: impl AsRef<Path>) -> Result<()> {
         let path = path.as_ref();
-        
+
         if !path.exists() {
             anyhow::bail!("Workspace path does not exist: {}", path.display());
         }
@@ -31,7 +31,7 @@ impl Workspace {
 
         let mut root = self.root.write().await;
         *root = Some(path.to_path_buf());
-        
+
         tracing::info!("Workspace selected: {}", path.display());
         Ok(())
     }
@@ -51,18 +51,28 @@ impl Workspace {
     /// Resolve artifact path within workspace
     pub async fn resolve_artifact_path(&self, kind: &str, name: &str) -> Result<PathBuf> {
         let root = self.root.read().await;
-        let root = root.as_ref()
-            .ok_or_else(|| anyhow::anyhow!("No workspace selected. Use 'omni:workspace select <path>'"))?;
+        let root = root.as_ref().ok_or_else(|| {
+            anyhow::anyhow!("No workspace selected. Use 'omni:workspace select <path>'")
+        })?;
 
         // Create .omniscient directory in workspace
         let omni_dir = root.join(".omniscient");
-        std::fs::create_dir_all(&omni_dir)
-            .with_context(|| format!("Failed to create .omniscient directory: {}", omni_dir.display()))?;
+        std::fs::create_dir_all(&omni_dir).with_context(|| {
+            format!(
+                "Failed to create .omniscient directory: {}",
+                omni_dir.display()
+            )
+        })?;
 
         // Create kind-specific subdirectory
         let kind_dir = omni_dir.join(kind);
-        std::fs::create_dir_all(&kind_dir)
-            .with_context(|| format!("Failed to create {} directory: {}", kind, kind_dir.display()))?;
+        std::fs::create_dir_all(&kind_dir).with_context(|| {
+            format!(
+                "Failed to create {} directory: {}",
+                kind,
+                kind_dir.display()
+            )
+        })?;
 
         Ok(kind_dir.join(name))
     }
@@ -70,7 +80,8 @@ impl Workspace {
     /// List all artifact types in workspace
     pub async fn list_artifact_types(&self) -> Result<Vec<String>> {
         let root = self.root.read().await;
-        let root = root.as_ref()
+        let root = root
+            .as_ref()
             .ok_or_else(|| anyhow::anyhow!("No workspace selected"))?;
 
         let omni_dir = root.join(".omniscient");
@@ -117,7 +128,7 @@ mod tests {
 
         let temp_dir = TempDir::new().unwrap();
         workspace.select(temp_dir.path()).await.unwrap();
-        
+
         assert!(workspace.is_selected().await);
         assert_eq!(workspace.root().await.unwrap(), temp_dir.path());
     }
@@ -128,8 +139,13 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         workspace.select(temp_dir.path()).await.unwrap();
 
-        let path = workspace.resolve_artifact_path("diff", "test.diff").await.unwrap();
-        assert!(path.to_string_lossy().contains(".omniscient/diff/test.diff"));
+        let path = workspace
+            .resolve_artifact_path("diff", "test.diff")
+            .await
+            .unwrap();
+        assert!(path
+            .to_string_lossy()
+            .contains(".omniscient/diff/test.diff"));
     }
 
     #[tokio::test]

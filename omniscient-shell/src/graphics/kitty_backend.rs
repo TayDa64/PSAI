@@ -1,7 +1,7 @@
 //! Kitty graphics protocol backend implementation
 
+use crate::graphics::backend::{BackendType, Capabilities, GraphicsBackend, Region};
 use anyhow::Result;
-use crate::graphics::backend::{GraphicsBackend, BackendType, Capabilities, Region};
 
 pub struct KittyBackend {
     capabilities: Capabilities,
@@ -26,7 +26,9 @@ impl KittyBackend {
 
     fn detect_kitty_support() -> bool {
         // Check for Kitty terminal via environment variables
-        std::env::var("TERM").map(|t| t.contains("kitty")).unwrap_or(false)
+        std::env::var("TERM")
+            .map(|t| t.contains("kitty"))
+            .unwrap_or(false)
             || std::env::var("KITTY_WINDOW_ID").is_ok()
     }
 }

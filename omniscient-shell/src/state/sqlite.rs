@@ -1,7 +1,7 @@
 //! SQLite-backed state storage
 
 use anyhow::Result;
-use rusqlite::{Connection, params};
+use rusqlite::Connection;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -15,7 +15,7 @@ impl SqliteStore {
     /// Create a new store at the given path
     pub fn new(path: &Path) -> Result<Self> {
         let conn = Connection::open(path)?;
-        
+
         // Create tables
         conn.execute(
             "CREATE TABLE IF NOT EXISTS kv_store (
@@ -58,7 +58,7 @@ impl SqliteStore {
     /// Create an in-memory store
     pub fn in_memory() -> Result<Self> {
         let conn = Connection::open_in_memory()?;
-        
+
         conn.execute(
             "CREATE TABLE kv_store (
                 key TEXT PRIMARY KEY,
@@ -110,7 +110,8 @@ mod tests {
     #[tokio::test]
     async fn test_in_memory_store() {
         let store = SqliteStore::in_memory().unwrap();
-        // Basic creation test
-        assert!(store.conn.lock().await.is_ok());
+        // Basic creation test - just verify we can lock the connection
+        let _guard = store.conn.lock().await;
+        // If we got here, the store was created successfully
     }
 }

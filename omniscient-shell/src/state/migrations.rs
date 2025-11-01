@@ -27,8 +27,12 @@ pub fn migrate(conn: &mut Connection) -> Result<()> {
         .unwrap_or(0);
 
     if version < CURRENT_VERSION {
-        tracing::info!("Running migrations from version {} to {}", version, CURRENT_VERSION);
-        
+        tracing::info!(
+            "Running migrations from version {} to {}",
+            version,
+            CURRENT_VERSION
+        );
+
         // Run migrations based on current version
         if version < 1 {
             migrate_to_v1(conn)?;
@@ -44,7 +48,7 @@ pub fn migrate(conn: &mut Connection) -> Result<()> {
 
 fn migrate_to_v1(conn: &mut Connection) -> Result<()> {
     tracing::info!("Migrating to schema version 1");
-    
+
     // Record migration
     let now = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)?
@@ -87,12 +91,20 @@ pub fn current_version(conn: &Connection) -> Result<i32> {
 /// Rollback to a specific version (use with caution!)
 pub fn rollback_to_version(conn: &mut Connection, target_version: i32) -> Result<()> {
     let current = current_version(conn)?;
-    
+
     if target_version >= current {
-        anyhow::bail!("Cannot rollback to version {} (current: {})", target_version, current);
+        anyhow::bail!(
+            "Cannot rollback to version {} (current: {})",
+            target_version,
+            current
+        );
     }
 
-    tracing::warn!("Rolling back from version {} to {}", current, target_version);
+    tracing::warn!(
+        "Rolling back from version {} to {}",
+        current,
+        target_version
+    );
 
     // Delete migrations after target version
     conn.execute(
@@ -111,13 +123,13 @@ mod tests {
     #[test]
     fn test_migration() {
         let mut conn = Connection::open_in_memory().unwrap();
-        
+
         // Should need migration initially
         migrate(&mut conn).unwrap();
-        
+
         // Should not need migration after running
         assert!(!needs_migration(&conn).unwrap());
-        
+
         // Should be at current version
         assert_eq!(current_version(&conn).unwrap(), CURRENT_VERSION);
     }
@@ -125,9 +137,9 @@ mod tests {
     #[test]
     fn test_version_check() {
         let mut conn = Connection::open_in_memory().unwrap();
-        
+
         migrate(&mut conn).unwrap();
-        
+
         let version = current_version(&conn).unwrap();
         assert_eq!(version, CURRENT_VERSION);
     }

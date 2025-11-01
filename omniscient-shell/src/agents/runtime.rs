@@ -3,11 +3,11 @@
 use anyhow::Result;
 use std::sync::Arc;
 
-use crate::agents::manifest::Manifest;
 use crate::agents::capabilities::CapabilityManager;
 use crate::agents::event_protocol::Event;
-use crate::agents::wasm_host::WasmHost;
+use crate::agents::manifest::Manifest;
 use crate::agents::native_runner::NativeRunner;
+use crate::agents::wasm_host::WasmHost;
 
 /// Agent runtime for executing agents
 pub struct AgentRuntime {
@@ -50,25 +50,25 @@ impl AgentRuntime {
 
     async fn execute_wasm(&self, manifest: &Manifest, input: &str) -> Result<Vec<Event>> {
         tracing::info!("Executing WASM agent: {}", manifest.name);
-        
+
         // Placeholder - real implementation would:
         // 1. Load WASM module
         // 2. Setup WASI context with capability restrictions
         // 3. Execute with input
         // 4. Stream output events
-        
+
         Ok(vec![Event::input("wasm-agent", input.to_string(), 0)])
     }
 
     async fn execute_native(&self, manifest: &Manifest, input: &str) -> Result<Vec<Event>> {
         tracing::info!("Executing native agent: {}", manifest.name);
-        
+
         // Placeholder - real implementation would:
         // 1. Spawn isolated subprocess
         // 2. Setup IPC channels
         // 3. Send input via stdin
         // 4. Stream output events from stdout
-        
+
         Ok(vec![Event::input("native-agent", input.to_string(), 0)])
     }
 
@@ -88,8 +88,17 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(feature = "wasm")]
     fn test_runtime_creation() {
         let runtime = AgentRuntime::new();
         assert!(runtime.is_ok());
+    }
+
+    #[test]
+    #[cfg(not(feature = "wasm"))]
+    fn test_runtime_creation_without_wasm() {
+        let runtime = AgentRuntime::new();
+        // Without WASM feature, runtime creation should fail gracefully
+        assert!(runtime.is_err());
     }
 }

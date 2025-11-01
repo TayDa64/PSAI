@@ -51,7 +51,7 @@ impl CapabilityGrant {
     pub fn new(capability: Capability, duration: Option<Duration>) -> Self {
         let granted_at = SystemTime::now();
         let expires_at = duration.map(|d| granted_at + d);
-        
+
         CapabilityGrant {
             capability,
             granted_at,
@@ -96,7 +96,7 @@ impl CapabilityManager {
         let grant = CapabilityGrant::new(capability.clone(), duration);
         let mut grants = self.grants.write().await;
         grants.push(grant);
-        
+
         tracing::info!("Granted capability: {}", capability.to_string());
         Ok(())
     }
@@ -104,16 +104,16 @@ impl CapabilityManager {
     /// Check if a capability is granted (default deny)
     pub async fn check(&self, capability: &Capability) -> bool {
         let grants = self.grants.read().await;
-        
-        grants.iter().any(|grant| {
-            grant.capability == *capability && grant.is_valid()
-        })
+
+        grants
+            .iter()
+            .any(|grant| grant.capability == *capability && grant.is_valid())
     }
 
     /// Revoke a capability
     pub async fn revoke(&self, capability: &Capability) -> Result<()> {
         let mut grants = self.grants.write().await;
-        
+
         let mut revoked = false;
         for grant in grants.iter_mut() {
             if grant.capability == *capability && !grant.revoked {
@@ -126,17 +126,17 @@ impl CapabilityManager {
             tracing::info!("Revoked capability: {}", capability.to_string());
             Ok(())
         } else {
-            anyhow::bail!("Capability not found or already revoked: {}", capability.to_string())
+            anyhow::bail!(
+                "Capability not found or already revoked: {}",
+                capability.to_string()
+            )
         }
     }
 
     /// Get all active grants
     pub async fn active_grants(&self) -> Vec<CapabilityGrant> {
         let grants = self.grants.read().await;
-        grants.iter()
-            .filter(|g| g.is_valid())
-            .cloned()
-            .collect()
+        grants.iter().filter(|g| g.is_valid()).cloned().collect()
     }
 
     /// Cleanup expired grants
@@ -167,7 +167,7 @@ mod tests {
     async fn test_default_deny() {
         let manager = CapabilityManager::new();
         let cap = Capability::new("files", "read");
-        
+
         // Should be denied by default
         assert!(!manager.check(&cap).await);
     }
@@ -176,7 +176,7 @@ mod tests {
     async fn test_grant_and_check() {
         let manager = CapabilityManager::new();
         let cap = Capability::new("files", "read");
-        
+
         manager.grant(cap.clone(), None).await.unwrap();
         assert!(manager.check(&cap).await);
     }
@@ -185,10 +185,10 @@ mod tests {
     async fn test_revoke() {
         let manager = CapabilityManager::new();
         let cap = Capability::new("files", "read");
-        
+
         manager.grant(cap.clone(), None).await.unwrap();
         assert!(manager.check(&cap).await);
-        
+
         manager.revoke(&cap).await.unwrap();
         assert!(!manager.check(&cap).await);
     }
@@ -197,16 +197,19 @@ mod tests {
     async fn test_time_bounded() {
         let manager = CapabilityManager::new();
         let cap = Capability::new("network", "connect");
-        
+
         // Grant for 1 millisecond
-        manager.grant(cap.clone(), Some(Duration::from_millis(1))).await.unwrap();
-        
+        manager
+            .grant(cap.clone(), Some(Duration::from_millis(1)))
+            .await
+            .unwrap();
+
         // Should be valid immediately
         assert!(manager.check(&cap).await);
-        
+
         // Wait for expiration
         tokio::time::sleep(Duration::from_millis(10)).await;
-        
+
         // Should be expired
         assert!(!manager.check(&cap).await);
     }

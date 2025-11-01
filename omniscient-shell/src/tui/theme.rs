@@ -1,7 +1,7 @@
 //! Theme system for consistent styling
 
-use ratatui::style::Color;
 use crate::utils::config::ThemeConfig;
+use ratatui::style::Color;
 
 pub struct Theme {
     pub name: String,

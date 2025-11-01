@@ -26,16 +26,16 @@ pub fn apply_sandbox(_pid: u32, _config: &SandboxConfig) -> Result<()> {
     {
         // Windows: Job Objects
     }
-    
+
     #[cfg(target_os = "linux")]
     {
         // Linux: cgroups + seccomp
     }
-    
+
     #[cfg(target_os = "macos")]
     {
         // macOS: sandbox-exec
     }
-    
+
     Ok(())
 }

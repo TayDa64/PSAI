@@ -164,6 +164,159 @@ Once the codespace starts, you can press `ctrl+shift+b` (`cmd+shift+b` on Mac) t
 
 Please see PowerShell [Testing Guidelines - Running Tests Outside of CI][running-tests-outside-of-ci] on how to test your build locally.
 
+### Contributing to Omniscient Shell
+
+The Omniscient Shell is a Rust-based AI-native companion shell that extends PowerShell. It includes optional enterprise features (OAuth integration, agent capabilities) that are not required for basic development and testing.
+
+#### Pro Plus Developer Path (Minimal Development Setup)
+
+If you are using GitHub Copilot Pro Plus or don't have access to enterprise entitlements, you can build and test the Omniscient Shell with minimal features:
+
+**Prerequisites:**
+- [Rust toolchain](https://rustup.rs/) (latest stable)
+- Basic development tools (git, text editor)
+
+**Quick Start Commands:**
+
+```bash
+# Navigate to the omniscient-shell directory
+cd omniscient-shell
+
+# Build without enterprise features (default configuration)
+cargo build --no-default-features
+
+# Run tests
+cargo test --no-default-features
+
+# Run the shell with omniscience features disabled
+cargo run --no-default-features -- --no-omniscience
+
+# Check code formatting
+cargo fmt --all -- --check
+
+# Run linter
+cargo clippy --no-default-features -- -D warnings
+```
+
+**What's included in the Pro Plus path:**
+- Core shell functionality
+- TUI dashboard
+- Graphics backends (kitty protocol support)
+- PowerShell integration
+- State management
+- Workspace management
+- Notification system
+
+**What's NOT included (requires `omniscience` feature):**
+- OAuth2 authentication flows
+- Token vault with OS keychain integration
+- Agent runtime and registry
+- WASM agent hosting
+- Capability-based security model
+
+#### Enterprise Developer Path (Full Features)
+
+If you have enterprise entitlements and want to work with omniscience features:
+
+```bash
+# Build with omniscience features enabled
+cargo build --features omniscience
+
+# Run tests with omniscience
+cargo test --features omniscience
+
+# Build with all optional features
+cargo build --features "omniscience,wasm,media"
+
+# Run the shell with omniscience enabled
+cargo run --features omniscience
+```
+
+**Additional enterprise prerequisites:**
+- GitHub OAuth app credentials (for device code flow testing)
+- Access to internal token storage services
+- Copilot Enterprise entitlements (if testing Copilot integration)
+
+#### Omniscient Shell Project Structure
+
+```
+omniscient-shell/
+├── src/
+│   ├── main.rs              # Entry point with --no-omniscience flag support
+│   ├── oauth/               # OAuth flows (requires omniscience feature)
+│   ├── oauth_shim.rs        # Minimal shims when omniscience is disabled
+│   ├── agents/              # Agent runtime (requires omniscience feature)
+│   ├── security/            # Security model (requires omniscience feature)
+│   ├── shell/               # PowerShell integration (always available)
+│   ├── tui/                 # Terminal UI (always available)
+│   ├── graphics/            # Graphics backends (always available)
+│   ├── state/               # State management (always available)
+│   ├── workspace/           # Workspace management (always available)
+│   └── utils/               # Utilities (always available)
+├── Cargo.toml               # Feature flags and dependencies
+└── README.md                # Getting started guide
+```
+
+#### Running Omniscient Shell CI Locally
+
+The CI workflow includes a fast path for Pro Plus developers:
+
+```bash
+# Fast unit tests (Pro Plus path) - runs in ~30 seconds
+cargo test --no-default-features
+
+# Full test suite with kitty graphics support
+cargo test --no-default-features --features kitty
+
+# Enterprise integration tests (requires omniscience feature)
+cargo test --features omniscience
+```
+
+#### Common Development Tasks
+
+**Format code:**
+```bash
+cargo fmt --all
+```
+
+**Run linter:**
+```bash
+cargo clippy --all-targets --all-features -- -D warnings
+```
+
+**Build release binary:**
+```bash
+cargo build --release --no-default-features
+```
+
+**Run with verbose logging:**
+```bash
+RUST_LOG=debug cargo run --no-default-features
+```
+
+#### Troubleshooting
+
+**Error: "OAuth functionality is disabled"**
+- This is expected when running without the `omniscience` feature
+- Either build with `--features omniscience` or use `--no-omniscience` flag
+
+**Build fails with "pkg-config couldn't find notcurses"**
+- This occurs when building with `--all-features` on systems without notcurses installed
+- Solution: Use specific features like `--features omniscience` or install notcurses system package
+
+**Tests fail with "WASM support not compiled in"**
+- Tests requiring WASM need the `wasm` feature enabled
+- Solution: Run `cargo test --features wasm` or `cargo test --no-default-features`
+
+#### Next Steps
+
+Once you're comfortable with the Pro Plus development path, explore:
+- [Advanced Features](../omniscient-shell/ADVANCED_FEATURES.md)
+- [Integration Guide](../omniscient-shell/INTEGRATION.md)
+- [Implementation Details](../omniscient-shell/IMPLEMENTATION.md)
+
+For questions or to request enterprise access for omniscience features, open an issue with the `omniscient-shell` label.
+
 ### Lifecycle of a pull request
 
 #### Before submitting

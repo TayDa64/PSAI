@@ -13,7 +13,12 @@ pub struct RetentionPolicy {
 }
 
 impl RetentionPolicy {
-    pub fn new(always_persist: Vec<String>, ephemeral: Vec<String>, days: u32, max_mb: u32) -> Self {
+    pub fn new(
+        always_persist: Vec<String>,
+        ephemeral: Vec<String>,
+        days: u32,
+        max_mb: u32,
+    ) -> Self {
         RetentionPolicy {
             always_persist: always_persist.into_iter().collect(),
             ephemeral: ephemeral.into_iter().collect(),
@@ -50,7 +55,7 @@ impl RetentionPolicy {
         // 3. Exclude bookmarks
         // 4. Delete files
         // 5. Return pruned artifact IDs
-        
+
         tracing::info!("Pruning artifacts with strategy: {:?}", strategy);
         Ok(vec![])
     }
@@ -82,12 +87,12 @@ mod tests {
     #[test]
     fn test_retention_policy() {
         let policy = RetentionPolicy::default();
-        
+
         assert!(policy.should_persist("diff"));
         assert!(policy.should_persist("log"));
         assert!(policy.is_ephemeral("preview"));
         assert!(policy.is_ephemeral("scratch"));
-        
+
         assert_eq!(policy.ttl("diff"), None);
         assert_eq!(policy.ttl("preview"), Some(30));
     }
@@ -100,7 +105,7 @@ mod tests {
             7,
             512,
         );
-        
+
         assert_eq!(policy.days, 7);
         assert_eq!(policy.max_mb, 512);
     }

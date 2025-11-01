@@ -40,7 +40,7 @@ pub struct InputEvent {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OutputEvent {
     pub chunk_id: u64,
-    pub content_type: String,  // "text/plain", "text/markdown", "application/json"
+    pub content_type: String, // "text/plain", "text/markdown", "application/json"
     pub data: Vec<u8>,
     pub complete: bool,
 }
@@ -49,7 +49,7 @@ pub struct OutputEvent {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArtifactEvent {
     pub id: String,
-    pub kind: String,  // "diff", "log", "preview", "code"
+    pub kind: String, // "diff", "log", "preview", "code"
     pub path: String,
     pub preview_hint: Option<String>,
 }
@@ -88,7 +88,7 @@ pub struct ErrorEvent {
 pub struct StateUpdateEvent {
     pub key: String,
     pub value: serde_json::Value,
-    pub scope: String,  // "agent", "session", "global"
+    pub scope: String, // "agent", "session", "global"
 }
 
 impl Event {
@@ -132,7 +132,12 @@ impl Event {
         )
     }
 
-    pub fn error(agent_id: impl Into<String>, code: impl Into<String>, message: impl Into<String>, sequence: u64) -> Self {
+    pub fn error(
+        agent_id: impl Into<String>,
+        code: impl Into<String>,
+        message: impl Into<String>,
+        sequence: u64,
+    ) -> Self {
         Event::new(
             EventType::Error(ErrorEvent {
                 code: code.into(),
@@ -162,7 +167,7 @@ mod tests {
         let event = Event::input("test-agent", "Hello".to_string(), 1);
         let json = event.to_json().unwrap();
         let parsed = Event::from_json(&json).unwrap();
-        
+
         assert_eq!(event.agent_id, parsed.agent_id);
         assert_eq!(event.sequence, parsed.sequence);
     }
@@ -177,7 +182,7 @@ mod tests {
             true,
             2,
         );
-        
+
         match event.event_type {
             EventType::Output(output) => {
                 assert_eq!(output.chunk_id, 1);
@@ -191,7 +196,7 @@ mod tests {
     #[test]
     fn test_error_event() {
         let event = Event::error("test-agent", "ERR001", "Something failed", 3);
-        
+
         match event.event_type {
             EventType::Error(error) => {
                 assert_eq!(error.code, "ERR001");

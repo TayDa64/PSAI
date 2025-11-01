@@ -2,9 +2,9 @@
 
 use anyhow::Result;
 use std::path::Path;
-use std::process::{Command, Child, Stdio};
+use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::process::Command as TokioCommand;
+use tokio::process::{Child, Command as TokioCommand};
 
 pub struct NativeRunner {
     // Process isolation configuration
@@ -22,19 +22,19 @@ impl NativeRunner {
             // Use Job Objects for isolation on Windows
             self.spawn_windows(executable, args)
         }
-        
+
         #[cfg(target_os = "linux")]
         {
             // Use cgroups for isolation on Linux
             self.spawn_linux(executable, args).await
         }
-        
+
         #[cfg(target_os = "macos")]
         {
             // Use sandbox-exec for isolation on macOS
             self.spawn_macos(executable, args)
         }
-        
+
         #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
         {
             anyhow::bail!("Native agent isolation not implemented for this platform")
@@ -44,13 +44,13 @@ impl NativeRunner {
     #[cfg(target_os = "windows")]
     fn spawn_windows(&self, executable: &Path, args: &[String]) -> Result<Child> {
         // Windows Job Objects implementation
-        let child = Command::new(executable)
+        let child = TokioCommand::new(executable)
             .args(args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()?;
-        
+
         tracing::info!("Spawned native agent on Windows with PID: {:?}", child.id());
         Ok(child)
     }
@@ -64,7 +64,7 @@ impl NativeRunner {
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()?;
-        
+
         tracing::info!("Spawned native agent on Linux with PID: {:?}", child.id());
         Ok(child)
     }
@@ -72,16 +72,16 @@ impl NativeRunner {
     #[cfg(target_os = "macos")]
     fn spawn_macos(&self, executable: &Path, args: &[String]) -> Result<Child> {
         // macOS sandbox-exec implementation
-        let child = Command::new("sandbox-exec")
+        let child = TokioCommand::new("sandbox-exec")
             .arg("-f")
-            .arg("/dev/null")  // Sandbox profile (to be implemented)
+            .arg("/dev/null") // Sandbox profile (to be implemented)
             .arg(executable)
             .args(args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()?;
-        
+
         tracing::info!("Spawned native agent on macOS with PID: {:?}", child.id());
         Ok(child)
     }

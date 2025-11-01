@@ -1,10 +1,8 @@
 //! State management and persistence
 
-pub mod sqlite;
-pub mod ledger;
-pub mod kv_store;
-pub mod migrations;
+#![allow(dead_code)]
 
-pub use sqlite::SqliteStore;
-pub use ledger::EventLedger;
-pub use kv_store::KVStore;
+pub mod kv_store;
+pub mod ledger;
+pub mod migrations;
+pub mod sqlite;

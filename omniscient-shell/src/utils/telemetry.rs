@@ -124,16 +124,19 @@ impl TelemetryCollector {
         let name = metric.name.clone();
         let metadata = metric.metadata.clone();
         let duration_ms = metric.finish().as_millis() as u64;
-        self.record_event(name, Some(duration_ms), metadata, success).await
+        self.record_event(name, Some(duration_ms), metadata, success)
+            .await
     }
 
     /// Sanitize metadata to remove sensitive information
     fn sanitize_metadata(&self, mut metadata: HashMap<String, String>) -> HashMap<String, String> {
         // Remove any keys that might contain secrets
         let sensitive_keys = ["token", "password", "secret", "key", "auth", "credential"];
-        
+
         metadata.retain(|k, _| {
-            !sensitive_keys.iter().any(|&sensitive| k.to_lowercase().contains(sensitive))
+            !sensitive_keys
+                .iter()
+                .any(|&sensitive| k.to_lowercase().contains(sensitive))
         });
 
         // Truncate long values
@@ -150,15 +153,13 @@ impl TelemetryCollector {
     /// Get summary statistics
     pub async fn get_summary(&self) -> TelemetrySummary {
         let events = self.events.read().await;
-        
+
         let total_events = events.len();
         let successful_events = events.iter().filter(|e| e.success).count();
         let failed_events = total_events - successful_events;
 
         let avg_duration = if !events.is_empty() {
-            let sum: u64 = events.iter()
-                .filter_map(|e| e.duration_ms)
-                .sum();
+            let sum: u64 = events.iter().filter_map(|e| e.duration_ms).sum();
             Some(sum / events.len() as u64)
         } else {
             None
@@ -189,11 +190,11 @@ impl TelemetryCollector {
     pub async fn disable(&self) {
         let mut config = self.config.write().await;
         config.enabled = false;
-        
+
         // Clear existing data
         let mut events = self.events.write().await;
         events.clear();
-        
+
         tracing::info!("Telemetry disabled and data cleared");
     }
 }
@@ -232,7 +233,10 @@ mod tests {
         let mut metadata = HashMap::new();
         metadata.insert("operation".to_string(), "test".to_string());
 
-        collector.record_event("test_event", Some(100), metadata, true).await.unwrap();
+        collector
+            .record_event("test_event", Some(100), metadata, true)
+            .await
+            .unwrap();
 
         let summary = collector.get_summary().await;
         assert_eq!(summary.total_events, 1);
@@ -249,7 +253,10 @@ mod tests {
         metadata.insert("operation".to_string(), "test".to_string());
         metadata.insert("token".to_string(), "secret123".to_string()); // Should be removed
 
-        collector.record_event("test", None, metadata, true).await.unwrap();
+        collector
+            .record_event("test", None, metadata, true)
+            .await
+            .unwrap();
 
         let events = collector.events.read().await;
         assert!(!events[0].metadata.contains_key("token"));
@@ -262,8 +269,7 @@ mod tests {
         config.enabled = true;
         let collector = TelemetryCollector::new(config);
 
-        let metric = PerformanceMetric::new("test_operation")
-            .with_metadata("type", "unittest");
+        let metric = PerformanceMetric::new("test_operation").with_metadata("type", "unittest");
 
         tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
 

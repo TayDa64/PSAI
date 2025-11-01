@@ -1,6 +1,5 @@
 //! Command palette for interactive commands
 
-use anyhow::Result;
 use std::collections::HashMap;
 
 /// Command definition
@@ -164,7 +163,7 @@ impl CommandPalette {
     /// Register a command
     pub fn register(&mut self, command: Command) {
         self.commands.insert(command.name.clone(), command.clone());
-        
+
         for alias in &command.aliases {
             self.commands.insert(alias.clone(), command.clone());
         }
@@ -173,13 +172,17 @@ impl CommandPalette {
     /// Search for commands matching a query
     pub fn search(&self, query: &str) -> Vec<&Command> {
         let query_lower = query.to_lowercase();
-        
-        let mut results: Vec<&Command> = self.commands
+
+        let mut results: Vec<&Command> = self
+            .commands
             .values()
             .filter(|cmd| {
-                cmd.name.to_lowercase().contains(&query_lower) ||
-                cmd.description.to_lowercase().contains(&query_lower) ||
-                cmd.aliases.iter().any(|a| a.to_lowercase().contains(&query_lower))
+                cmd.name.to_lowercase().contains(&query_lower)
+                    || cmd.description.to_lowercase().contains(&query_lower)
+                    || cmd
+                        .aliases
+                        .iter()
+                        .any(|a| a.to_lowercase().contains(&query_lower))
             })
             .collect();
 
@@ -217,7 +220,7 @@ mod tests {
     #[test]
     fn test_command_palette() {
         let palette = CommandPalette::new();
-        
+
         // Test search
         let results = palette.search("workspace");
         assert!(results.len() >= 2);
@@ -236,7 +239,7 @@ mod tests {
     #[test]
     fn test_search() {
         let palette = CommandPalette::new();
-        
+
         let results = palette.search("oauth");
         assert!(!results.is_empty());
 

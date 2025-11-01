@@ -14,7 +14,13 @@ impl FFmpegProcessor {
     }
 
     /// Generate thumbnail
-    pub async fn generate_thumbnail(&self, _input: &Path, _output: &Path, _width: u32, _height: u32) -> Result<()> {
+    pub async fn generate_thumbnail(
+        &self,
+        _input: &Path,
+        _output: &Path,
+        _width: u32,
+        _height: u32,
+    ) -> Result<()> {
         #[cfg(feature = "media")]
         {
             // Real implementation would use ffmpeg-next
@@ -28,7 +34,12 @@ impl FFmpegProcessor {
     }
 
     /// Extract video frame
-    pub async fn extract_frame(&self, _input: &Path, _output: &Path, _timestamp_s: f64) -> Result<()> {
+    pub async fn extract_frame(
+        &self,
+        _input: &Path,
+        _output: &Path,
+        _timestamp_s: f64,
+    ) -> Result<()> {
         tracing::info!("Extracting frame (stub)");
         Ok(())
     }

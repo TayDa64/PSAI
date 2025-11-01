@@ -4,8 +4,10 @@ use anyhow::Result;
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use crate::notifications::channels::{
+    Notification, NotificationChannel, SystemChannel, TuiChannel,
+};
 use crate::notifications::profiles::{NotificationProfile, Priority};
-use crate::notifications::channels::{Notification, NotificationChannel, TuiChannel, SystemChannel};
 
 /// Notification dispatcher
 pub struct Notifier {
@@ -26,7 +28,12 @@ impl Notifier {
     }
 
     /// Send a notification
-    pub fn notify(&self, title: impl Into<String>, message: impl Into<String>, priority: Priority) -> Result<()> {
+    pub fn notify(
+        &self,
+        title: impl Into<String>,
+        message: impl Into<String>,
+        priority: Priority,
+    ) -> Result<()> {
         if !self.profile.should_notify(priority) {
             return Ok(());
         }

@@ -1,10 +1,7 @@
 //! Security and sandboxing (Phase 2)
 
-pub mod capabilities;
-pub mod consent;
-pub mod isolation;
-pub mod resource_limits;
-
 // Re-export agent capabilities for security module
+#[cfg(feature = "omniscience")]
 pub use crate::agents::capabilities::{Capability, CapabilityManager};
+#[cfg(feature = "omniscience")]
 pub use crate::oauth::consent::ConsentLedger;
