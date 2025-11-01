@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Layout management
 
 use ratatui::layout::{Constraint, Direction, Layout, Rect};

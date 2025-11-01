@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Graphics backend trait and types
 
 use anyhow::Result;

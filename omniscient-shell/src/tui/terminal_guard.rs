@@ -8,12 +8,12 @@ use crossterm::{
 use std::io::{stdout, Stdout};
 
 /// RAII guard that ensures terminal state is restored on drop
-/// 
+///
 /// This guard handles:
 /// - Normal exit paths
 /// - Early returns
 /// - Panic unwinding
-/// 
+///
 /// The terminal state is automatically restored when the guard is dropped,
 /// regardless of how the function exits.
 pub struct TerminalGuard {
@@ -26,7 +26,7 @@ impl TerminalGuard {
     pub fn new() -> Result<Self> {
         enable_raw_mode()?;
         stdout().execute(EnterAlternateScreen)?;
-        
+
         Ok(TerminalGuard {
             _stdout: stdout(),
             enabled: true,
@@ -46,13 +46,10 @@ impl Drop for TerminalGuard {
             // Best effort cleanup - ignore errors during drop
             let _ = disable_raw_mode();
             let _ = stdout().execute(LeaveAlternateScreen);
-            
+
             // Ensure cursor is visible
-            let _ = crossterm::execute!(
-                stdout(),
-                crossterm::cursor::Show
-            );
-            
+            let _ = crossterm::execute!(stdout(), crossterm::cursor::Show);
+
             tracing::debug!("Terminal state restored");
         }
     }
@@ -67,10 +64,9 @@ mod tests {
         // Note: This test may fail in CI environments without a TTY
         // The guard should handle this gracefully
         let result = TerminalGuard::new();
-        
+
         // In CI without TTY, this might fail - that's OK
-        if result.is_ok() {
-            let mut guard = result.unwrap();
+        if let Ok(mut guard) = result {
             guard.disable(); // Disable to avoid terminal changes in test
         }
     }
@@ -89,30 +85,27 @@ mod tests {
     fn test_early_return_with_guard() {
         // Simulate early return scenario
         fn early_return_function() -> Result<()> {
-            let result = TerminalGuard::new();
-            if result.is_err() {
+            if let Ok(mut _guard) = TerminalGuard::new() {
+                _guard.disable();
+
+                // Early return - guard should still restore on drop
+                if true {
+                    return Ok(());
+                }
+            } else {
                 return Ok(()); // Early return without TTY
             }
-            
-            let mut _guard = result.unwrap();
-            _guard.disable();
-            
-            // Early return - guard should still restore on drop
-            if true {
-                return Ok(());
-            }
-            
+
             Ok(())
         }
-        
+
         assert!(early_return_function().is_ok());
     }
 
     #[test]
     #[should_panic(expected = "intentional panic")]
     fn test_panic_with_guard() {
-        let result = TerminalGuard::new();
-        if let Ok(mut guard) = result {
+        if let Ok(mut guard) = TerminalGuard::new() {
             guard.disable();
             let _guard = guard;
             // Guard should still restore even on panic

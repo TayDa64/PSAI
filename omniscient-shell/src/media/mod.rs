@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Media processing (Phase 4)
 
 pub mod ffmpeg;

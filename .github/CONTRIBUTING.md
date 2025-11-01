@@ -4,11 +4,129 @@ We welcome and appreciate contributions from the community!
 
 There are many ways to become involved with PowerShell including:
 
+- [Contributing to Omniscient Shell](#contributing-to-omniscient-shell)
 - [Contributing to Documentation](#contributing-to-documentation)
 - [Contributing to Issues](#contributing-to-issues)
 - [Contributing to Code](#contributing-to-code)
 
 Please read the rest of this document to ensure a smooth contribution process.
+
+## Contributing to Omniscient Shell
+
+The Omniscient Shell is a Rust-based AI-native companion shell in the `omniscient-shell/` directory. 
+
+### Quick Start for Omniscient Shell Development
+
+#### Prerequisites
+
+- Rust toolchain (install via [rustup](https://rustup.rs/))
+- Git
+- A terminal
+
+#### Building and Testing
+
+```bash
+# Navigate to the omniscient-shell directory
+cd omniscient-shell
+
+# Build the project
+cargo build
+
+# Run all tests
+cargo test
+
+# Build with specific features
+cargo build --no-default-features --features kitty
+cargo build --all-features
+
+# Run tests with specific features
+cargo test --no-default-features
+cargo test --all-features
+
+# Check code formatting
+cargo fmt --all -- --check
+
+# Run linter
+cargo clippy --all-targets --all-features -- -D warnings
+```
+
+#### Running the Shell
+
+```bash
+# Run in development mode
+cargo run
+
+# Run with logging enabled
+RUST_LOG=debug cargo run
+
+# Build and run release version
+cargo build --release
+./target/release/omniscient-shell
+```
+
+### PR Checklist for Omniscient Shell
+
+Before submitting a PR that touches `omniscient-shell/`, ensure:
+
+- [ ] Code builds successfully: `cargo build --all-features`
+- [ ] All tests pass: `cargo test --all-features`
+- [ ] Code is formatted: `cargo fmt --all`
+- [ ] Clippy passes: `cargo clippy --all-targets --all-features -- -D warnings`
+- [ ] Feature combinations work:
+  - [ ] Default features: `cargo test`
+  - [ ] No default features: `cargo test --no-default-features`
+  - [ ] All features: `cargo test --all-features`
+- [ ] New functionality has tests
+- [ ] TODO comments added for future work where appropriate
+- [ ] Security implications considered (especially for sandbox/WASM features)
+
+### Architecture Notes
+
+- **Native Runner**: OS-specific process isolation (Windows Job Objects, Linux cgroups, macOS sandbox-exec)
+- **WASM Host**: Sandboxed execution environment for untrusted agent code
+- **Terminal Guard**: RAII guard ensuring terminal state restoration on panic/early exit
+- **Telemetry**: Opt-in only, performance metrics, no secrets/PII collection
+
+### Common Tasks
+
+**Add a new test:**
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_my_feature() {
+        // Your test code
+    }
+
+    #[tokio::test]
+    async fn test_async_feature() {
+        // Your async test code
+    }
+}
+```
+
+**Add a new TODO for future work:**
+```rust
+/// Process user input
+/// TODO: Add input validation and sanitization
+pub fn process_input(input: &str) -> Result<()> {
+    // Implementation
+}
+```
+
+**Check platform-specific code compiles:**
+```bash
+# Linux path
+cargo build --target x86_64-unknown-linux-gnu
+
+# Windows path
+cargo build --target x86_64-pc-windows-msvc
+
+# macOS path
+cargo build --target x86_64-apple-darwin
+```
 
 ## Contributing to Documentation
 

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Error types with recovery hints
 
 use thiserror::Error;
@@ -69,7 +70,11 @@ pub enum RecoveryAction {
 }
 
 impl OmniError {
-    pub fn config(message: impl Into<String>, hint: impl Into<Option<String>>, recovery: RecoveryAction) -> Self {
+    pub fn config(
+        message: impl Into<String>,
+        hint: impl Into<Option<String>>,
+        recovery: RecoveryAction,
+    ) -> Self {
         OmniError::Config {
             message: message.into(),
             hint: hint.into(),
@@ -77,7 +82,11 @@ impl OmniError {
         }
     }
 
-    pub fn graphics(message: impl Into<String>, hint: impl Into<Option<String>>, recovery: RecoveryAction) -> Self {
+    pub fn graphics(
+        message: impl Into<String>,
+        hint: impl Into<Option<String>>,
+        recovery: RecoveryAction,
+    ) -> Self {
         OmniError::Graphics {
             message: message.into(),
             hint: hint.into(),
@@ -85,7 +94,11 @@ impl OmniError {
         }
     }
 
-    pub fn shell(message: impl Into<String>, hint: impl Into<Option<String>>, recovery: RecoveryAction) -> Self {
+    pub fn shell(
+        message: impl Into<String>,
+        hint: impl Into<Option<String>>,
+        recovery: RecoveryAction,
+    ) -> Self {
         OmniError::Shell {
             message: message.into(),
             hint: hint.into(),
@@ -93,7 +106,11 @@ impl OmniError {
         }
     }
 
-    pub fn agent(message: impl Into<String>, hint: impl Into<Option<String>>, recovery: RecoveryAction) -> Self {
+    pub fn agent(
+        message: impl Into<String>,
+        hint: impl Into<Option<String>>,
+        recovery: RecoveryAction,
+    ) -> Self {
         OmniError::Agent {
             message: message.into(),
             hint: hint.into(),
@@ -101,7 +118,11 @@ impl OmniError {
         }
     }
 
-    pub fn oauth(message: impl Into<String>, hint: impl Into<Option<String>>, recovery: RecoveryAction) -> Self {
+    pub fn oauth(
+        message: impl Into<String>,
+        hint: impl Into<Option<String>>,
+        recovery: RecoveryAction,
+    ) -> Self {
         OmniError::OAuth {
             message: message.into(),
             hint: hint.into(),
@@ -109,7 +130,11 @@ impl OmniError {
         }
     }
 
-    pub fn workspace(message: impl Into<String>, hint: impl Into<Option<String>>, recovery: RecoveryAction) -> Self {
+    pub fn workspace(
+        message: impl Into<String>,
+        hint: impl Into<Option<String>>,
+        recovery: RecoveryAction,
+    ) -> Self {
         OmniError::Workspace {
             message: message.into(),
             hint: hint.into(),
@@ -144,7 +169,7 @@ impl OmniError {
     /// Get a user-friendly error message with recovery suggestion
     pub fn display_with_recovery(&self) -> String {
         let mut msg = format!("{}", self);
-        
+
         if let Some(hint) = self.hint() {
             msg.push_str(&format!("\n💡 Hint: {}", hint));
         }

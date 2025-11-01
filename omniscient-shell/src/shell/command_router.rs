@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Command router for PowerShell commands
 
 use anyhow::Result;
@@ -45,8 +46,8 @@ impl CommandRouter {
             // Remove @agent-name prefix
             command
                 .trim_start_matches('@')
-                .splitn(2, ' ')
-                .nth(1)
+                .split_once(' ')
+                .map(|(_, cmd)| cmd)
                 .unwrap_or("")
         } else {
             command
@@ -87,7 +88,7 @@ mod tests {
         let router = CommandRouter::new();
         let result = router.route("Get-Process");
         assert!(result.is_ok());
-        
+
         if let Ok(RouteTarget::PowerShell) = result {
             // Expected
         } else {
@@ -100,7 +101,7 @@ mod tests {
         let router = CommandRouter::new();
         let result = router.route("omni:help");
         assert!(result.is_ok());
-        
+
         if let Ok(RouteTarget::OmniscientShell) = result {
             // Expected
         } else {
@@ -113,7 +114,7 @@ mod tests {
         let router = CommandRouter::new();
         let result = router.route("@myagent do something");
         assert!(result.is_ok());
-        
+
         if let Ok(RouteTarget::Agent(name)) = result {
             assert_eq!(name, "myagent");
         } else {
@@ -124,7 +125,7 @@ mod tests {
     #[test]
     fn test_is_agent_command() {
         let router = CommandRouter::new();
-        
+
         assert!(router.is_agent_command("@agent test"));
         assert!(router.is_agent_command("omni:test"));
         assert!(!router.is_agent_command("Get-Process"));
@@ -133,7 +134,7 @@ mod tests {
     #[test]
     fn test_extract_command() {
         let router = CommandRouter::new();
-        
+
         assert_eq!(router.extract_command("omni:help"), "help");
         assert_eq!(router.extract_command("@agent do task"), "do task");
         assert_eq!(router.extract_command("Get-Process"), "Get-Process");
@@ -142,7 +143,7 @@ mod tests {
     #[test]
     fn test_extract_command_edge_cases() {
         let router = CommandRouter::new();
-        
+
         assert_eq!(router.extract_command("omni:"), "");
         assert_eq!(router.extract_command("@agent"), "");
         assert_eq!(router.extract_command(""), "");

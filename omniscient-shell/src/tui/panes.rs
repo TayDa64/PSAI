@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Pane definitions for the dashboard
 
 pub struct Pane {

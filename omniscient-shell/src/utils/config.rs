@@ -2,8 +2,8 @@
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
 use std::fs;
+use std::path::{Path, PathBuf};
 
 /// Main configuration structure (schema v0.1)
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -47,16 +47,16 @@ pub struct LayoutConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DefaultLayoutConfig {
-    pub preset: String, // "dashboard"
+    pub preset: String,     // "dashboard"
     pub panes: Vec<String>, // ["shell", "agent", "preview", "log"]
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ThemeConfig {
-    pub name: String, // "NeoCyan"
+    pub name: String,       // "NeoCyan"
     pub background: String, // "#0b0e10"
     pub foreground: String, // "#c9d1d9"
-    pub accent: String, // "#00d1ff"
+    pub accent: String,     // "#00d1ff"
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -99,7 +99,7 @@ pub struct VaultConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NotificationsConfig {
-    pub profile: String, // "minimal"
+    pub profile: String,       // "minimal"
     pub channels: Vec<String>, // ["tui", "system"]
 }
 
@@ -216,8 +216,7 @@ pub fn save_config(config: &Config, path: &Path) -> Result<()> {
             .with_context(|| format!("Failed to create config directory: {}", parent.display()))?;
     }
 
-    let contents = toml::to_string_pretty(config)
-        .context("Failed to serialize config")?;
+    let contents = toml::to_string_pretty(config).context("Failed to serialize config")?;
 
     fs::write(path, contents)
         .with_context(|| format!("Failed to write config file: {}", path.display()))?;

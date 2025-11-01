@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Media preview adapters
 
 use anyhow::Result;
